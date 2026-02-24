@@ -1,0 +1,1 @@
+package com.forecast.exception;  public class ForecastNotFoundException extends RuntimeException {     public ForecastNotFoundException(String message) {         super(message);     }      public ForecastNotFoundException(String message, Throwable cause) {         super(message, cause);     } }

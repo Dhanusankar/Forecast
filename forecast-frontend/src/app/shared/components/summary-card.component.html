@@ -1,0 +1,10 @@
+<div class="summary-card" [style.background-color]="background">
+  <div class="summary-header">
+    <div class="summary-title">{{ title }}</div>
+    <mat-icon class="summary-icon">{{ icon }}</mat-icon>
+  </div>
+
+  <div class="summary-value" [style.color]="textColor">{{ value | number: '1.0-0' }}</div>
+
+  <div class="summary-subtitle">{{ subtitle }}</div>
+</div>

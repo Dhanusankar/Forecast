@@ -1,0 +1,50 @@
+.error-alert {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background-color: #ffebee;
+  border: 1px solid #ef5350;
+  border-radius: 4px;
+  color: #c62828;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.error-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.error-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  color: #ef5350;
+  flex-shrink: 0;
+}
+
+.error-message {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.close-button {
+  color: #ef5350;
+  margin-left: 1rem;
+  flex-shrink: 0;
+}
