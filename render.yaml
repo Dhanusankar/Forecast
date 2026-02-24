@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: forecast-api
+    runtime: docker
+    dockerfile: ./Dockerfile
+    port: 8080
