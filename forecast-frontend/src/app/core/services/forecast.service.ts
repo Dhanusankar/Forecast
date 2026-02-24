@@ -8,7 +8,7 @@ import { Forecast, PageResponse, ForecastFilter } from '../models/forecast.model
   providedIn: 'root'
 })
 export class ForecastService {
-  private readonly API_URL = 'http://localhost:8080/api/forecasts';
+  private readonly API_URL = 'https://forecast-1-tpoj.onrender.com/api/forecasts';
   private readonly DEFAULT_PAGE_SIZE = 10;
 
   private loading$ = new BehaviorSubject<boolean>(false);

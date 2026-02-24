@@ -14,7 +14,7 @@ import {
   providedIn: 'root'
 })
 export class DashboardService {
-  private readonly API_URL = 'http://localhost:8080/api/dashboard';
+  private readonly API_URL = 'https://forecast-1-tpoj.onrender.com/api/dashboard';
   private loading$ = new BehaviorSubject<boolean>(false);
   private error$ = new BehaviorSubject<string | null>(null);
 
