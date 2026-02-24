@@ -1,0 +1,8 @@
+[build]
+  command = "cd forecast-frontend && npm run build"
+  publish = "forecast-frontend/dist/forecast-frontend"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
