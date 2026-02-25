@@ -5,6 +5,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { Router } from '@angular/router';
+import { AuthService } from '../core/services/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -13,7 +14,10 @@ import { Router } from '@angular/router';
   template: `
     <div class="home-container">
       <div class="header">
-        <h1>Financial Forecasting Dashboard</h1>
+        <div>
+          <h1>Financial Forecasting Dashboard</h1>
+          <p class="user-info">Welcome, <strong>{{ currentUser()?.username }}</strong> ({{ userRole() }})</p>
+        </div>
         <div class="nav-buttons">
           <button mat-raised-button (click)="router.navigate(['/forecasts'])">Forecasts</button>
           <button mat-raised-button (click)="router.navigate(['/expenses'])">Expenses</button>
@@ -67,6 +71,11 @@ import { Router } from '@angular/router';
       border-bottom: 2px solid #667eea;
       padding-bottom: 20px;
     }
+    .user-info {
+      color: #666;
+      font-size: 14px;
+      margin: 5px 0 0 0;
+    }
     .nav-buttons {
       display: flex;
       gap: 10px;
@@ -93,14 +102,20 @@ import { Router } from '@angular/router';
 })
 export class HomeComponent implements OnInit {
   private http = inject(HttpClient);
+  private authService = inject(AuthService);
   router = inject(Router);
   
   loading = signal(true);
   dashboardData = signal<any>(null);
   error = signal('');
+  currentUser = signal<any>(null);
+  userRole = signal('');
 
   ngOnInit() {
-    this.http.get<any>('https://forecast-1-tpoj.onrender.com/api/dashboard/overview?year=2024')
+    this.currentUser.set(this.authService.currentUser());
+    this.userRole.set(this.authService.currentUser()?.role || '');
+    
+    this.http.get<any>('http://localhost:8080/api/dashboard/overview?year=2024')
       .subscribe({
         next: (data) => {
           console.log('Dashboard data received:', data);
@@ -116,8 +131,6 @@ export class HomeComponent implements OnInit {
   }
 
   logout() {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('auth_user');
-    this.router.navigate(['/login']);
+    this.authService.logout();
   }
 }

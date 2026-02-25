@@ -13,6 +13,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialogModule, MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { AuthService } from '../core/services/auth.service';
 
 const DEPARTMENTS = ['Sales', 'Marketing', 'Operations', 'Engineering', 'Finance', 'HR', 'Legal', 'Support', 'Product', 'Strategy'];
 const YEARS = [2024, 2025, 2026, 2027, 2028];
@@ -335,6 +336,7 @@ export class ForecastComponent implements OnInit {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
   private dialog = inject(MatDialog);
+  private authService = inject(AuthService);
 
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -343,6 +345,7 @@ export class ForecastComponent implements OnInit {
   displayedColumns = ['department', 'category', 'scenario', 'year', 'monthName', 'revenue', 'expense', 'profit', 'actions'];
   departments = DEPARTMENTS;
   years = YEARS;
+  userRole = '';
   
   loading = false;
   pageSize = 10;
@@ -351,12 +354,21 @@ export class ForecastComponent implements OnInit {
   editingCell: { rowId: number; field: string } | null = null;
 
   ngOnInit() {
+    this.userRole = this.authService.currentUser()?.role || '';
+    // Remove actions column for viewers
+    if (this.isViewer()) {
+      this.displayedColumns = ['department', 'category', 'scenario', 'year', 'monthName', 'revenue', 'expense', 'profit'];
+    }
     this.filterForm = this.fb.group({
       scenario: [''],
       department: [''],
       year: ['']
     });
     this.loadData();
+  }
+
+  isViewer(): boolean {
+    return (this.userRole || '').toLowerCase() === 'viewer';
   }
 
   loadData() {
@@ -375,7 +387,7 @@ export class ForecastComponent implements OnInit {
       params = params.set('year', this.filterForm.get('year')?.value);
     }
 
-    this.http.get<any>('https://forecast-1-tpoj.onrender.com/api/forecasts', { params }).subscribe({
+    this.http.get<any>('http://localhost:8080/api/forecasts', { params }).subscribe({
       next: (data) => {
         const items = (data.content || []).map((item: any) => ({ ...item }));
         this.dataSource.data = items;
@@ -444,7 +456,7 @@ export class ForecastComponent implements OnInit {
 
   delete(row: any) {
     if (confirm('Are you sure you want to delete this record?')) {
-      this.http.delete(`https://forecast-1-tpoj.onrender.com/api/forecasts/${row.id}`).subscribe({
+      this.http.delete(`http://localhost:8080/api/forecasts/${row.id}`).subscribe({
         next: () => {
           this.loadData();
         },

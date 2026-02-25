@@ -40,8 +40,8 @@ import { MatIconModule } from '@angular/material/icon';
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Password</mat-label>
               <input matInput [type]="hidePassword() ? 'password' : 'text'" [(ngModel)]="password" name="password" required>
-              <button mat-icon-button matSuffix (click)="togglePasswordVisibility()" type="button">
-                <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+              <button mat-icon-button matSuffix (click)="togglePasswordVisibility()" type="button" class="password-toggle">
+                <mat-icon class="eye-icon">{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
             </mat-form-field>
 
@@ -135,6 +135,21 @@ import { MatIconModule } from '@angular/material/icon';
     .demo-users p {
       margin: 5px 0;
     }
+
+    .password-toggle {
+      color: #667eea;
+      cursor: pointer;
+    }
+
+    .password-toggle:hover {
+      color: #764ba2;
+    }
+
+    .eye-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
   `]
 })
 export class LoginComponent {
@@ -153,20 +168,21 @@ export class LoginComponent {
 
   onLogin() {
     if (!this.username || !this.password) {
-      this.errorMessage.set('Please enter username and password');
+      this.errorMessage.set('Please enter username or password');
       return;
     }
 
     this.loading.set(true);
     this.errorMessage.set('');
 
-    this.http.post<any>('https://forecast-1-tpoj.onrender.com/api/auth/login', {
+    this.http.post<any>('http://localhost:8080/api/auth/login', {
       username: this.username,
       password: this.password
     }).subscribe({
       next: (response) => {
         localStorage.setItem('auth_token', response.token);
         localStorage.setItem('auth_user', JSON.stringify(response));
+        this.loading.set(false);
         this.router.navigate(['/home']);
       },
       error: (error: any) => {

@@ -6,9 +6,11 @@ import { LayoutComponent } from './layout.component';
 import { HomeComponent } from './features/home.component';
 import { ForecastComponent } from './features/forecast-page.component';
 import { ExpensesComponent } from './features/expenses-page.component';
+import { LocalLoginComponent } from './local-login.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
+  { path: 'local-login', component: LocalLoginComponent },
   { path: 'register', component: RegisterComponent },
   {
     path: '',

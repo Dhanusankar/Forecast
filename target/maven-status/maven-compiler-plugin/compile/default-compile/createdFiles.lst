@@ -11,6 +11,7 @@ com\forecast\service\ForecastService.class
 com\forecast\mapper\ExpenseMapper.class
 com\forecast\dto\LoginResponseDTO.class
 com\forecast\entity\Forecast.class
+com\forecast\config\CorsConfig.class
 com\forecast\service\DashboardService.class
 com\forecast\repository\ExpenseRepository.class
 com\forecast\dto\PageResponseDTO$PageResponseDTOBuilder.class
