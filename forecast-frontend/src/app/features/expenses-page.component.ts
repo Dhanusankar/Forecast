@@ -13,6 +13,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialogModule, MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { AuthService } from '../core/services/auth.service';
 
 const DEPARTMENTS = ['Sales', 'Marketing', 'Operations', 'Engineering', 'Finance', 'HR', 'Legal', 'Support', 'Product', 'Strategy'];
 const YEARS = [2024, 2025, 2026, 2027, 2028];
@@ -120,7 +121,7 @@ const YEARS = [2024, 2025, 2026, 2027, 2028];
         </ng-container>
 
         <!-- Actions -->
-        <ng-container matColumnDef="actions">
+        <ng-container matColumnDef="actions" *ngIf="!isViewer()">
           <th mat-header-cell *matHeaderCellDef sticky class="actions-header"> Actions </th>
           <td mat-cell *matCellDef="let row" class="actions-cell">
             <button mat-raised-button color="primary" class="action-btn" (click)="openEditDialog(row)">
@@ -304,6 +305,7 @@ export class ExpensesComponent implements OnInit {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
   private dialog = inject(MatDialog);
+  private authService = inject(AuthService);
 
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -312,6 +314,7 @@ export class ExpensesComponent implements OnInit {
   displayedColumns = ['department', 'category', 'year', 'month', 'amount', 'actions'];
   departments = DEPARTMENTS;
   years = YEARS;
+  userRole = '';
   
   loading = false;
   pageSize = 10;
@@ -320,12 +323,25 @@ export class ExpensesComponent implements OnInit {
   editingCell: { rowId: number; field: string } | null = null;
 
   ngOnInit() {
+    this.userRole = this.authService.currentUser()?.role || '';
+    // Remove actions column for viewers
+    if (this.isViewer()) {
+      this.displayedColumns = ['department', 'category', 'year', 'month', 'amount'];
+    }
     this.filterForm = this.fb.group({
       department: [''],
       category: [''],
       year: ['']
     });
     this.loadData();
+  }
+
+  isViewer(): boolean {
+    return (this.userRole || '').toLowerCase() === 'viewer';
+  }
+
+  isAdmin(): boolean {
+    return (this.userRole || '').toLowerCase() === 'admin';
   }
 
   loadData() {
