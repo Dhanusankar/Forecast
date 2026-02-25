@@ -16,7 +16,7 @@ import { MatDialogModule, MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angu
 import { AuthService } from '../core/services/auth.service';
 
 const DEPARTMENTS = ['Sales', 'Marketing', 'Operations', 'Engineering', 'Finance', 'HR', 'Legal', 'Support', 'Product', 'Strategy'];
-const YEARS = [2024, 2025, 2026, 2027, 2028];
+const YEARS = [2024, 2025, 2026, 2027, 2028, 2029];
 
 @Component({
   selector: 'app-expenses',
@@ -480,9 +480,16 @@ export class ExpensesComponent implements OnInit {
     }
     this.http.post(`http://localhost:8080/api/spending`, row).subscribe({
       next: () => {
-        this.loadData();
+        console.log('Expense added successfully');
+        this.pageIndex = 0;
+        setTimeout(() => {
+          this.loadData();
+        }, 100);
       },
-      error: (err) => console.error('Error creating:', err)
+      error: (err) => {
+        console.error('Error creating expense:', err);
+        alert('Failed to add expense: ' + (err.error?.message || err.statusText || 'Unknown error'));
+      }
     });
   }
 

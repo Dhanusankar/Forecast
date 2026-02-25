@@ -16,7 +16,7 @@ import { AuthService } from '../core/services/auth.service';
       <div class="header">
         <div>
           <h1>Financial Forecasting Dashboard</h1>
-          <p class="user-info">Welcome, <strong>{{ currentUser()?.username }}</strong> ({{ userRole() }})</p>
+          <p class="user-info welcome-blue">Welcome, <strong>{{ currentUser()?.username }}</strong></p>
         </div>
         <div class="nav-buttons">
           <button mat-raised-button (click)="router.navigate(['/forecasts'])">Forecasts</button>
@@ -75,6 +75,9 @@ import { AuthService } from '../core/services/auth.service';
       color: #666;
       font-size: 14px;
       margin: 5px 0 0 0;
+    }
+    .welcome-blue {
+      color: #667eea;
     }
     .nav-buttons {
       display: flex;

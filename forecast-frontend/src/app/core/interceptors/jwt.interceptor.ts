@@ -1,6 +1,11 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 
 export const jwtInterceptor: HttpInterceptorFn = (request, next) => {
+  // Don't add token to login/register endpoints
+  if (request.url.includes('/auth/login') || request.url.includes('/auth/register')) {
+    return next(request);
+  }
+
   const token = localStorage.getItem('auth_token');
 
   if (token) {

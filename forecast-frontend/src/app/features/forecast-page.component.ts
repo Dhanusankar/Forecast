@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, inject, Inject } from '@angular/core';
+import { Component, OnInit, ViewChild, inject, Inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { HttpClient, HttpParams } from '@angular/common/http';
@@ -16,7 +16,7 @@ import { MatDialogModule, MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angu
 import { AuthService } from '../core/services/auth.service';
 
 const DEPARTMENTS = ['Sales', 'Marketing', 'Operations', 'Engineering', 'Finance', 'HR', 'Legal', 'Support', 'Product', 'Strategy'];
-const YEARS = [2024, 2025, 2026, 2027, 2028];
+const YEARS = [2024, 2025, 2026, 2027, 2028, 2029];
 
 @Component({
   selector: 'app-forecast',
@@ -61,6 +61,18 @@ const YEARS = [2024, 2025, 2026, 2027, 2028];
           <mat-option *ngFor="let dept of departments" [value]="dept">
             {{ dept }}
           </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Category</mat-label>
+        <mat-select formControlName="category">
+          <mat-option value="">All</mat-option>
+          <mat-option value="CapEx">CapEx</mat-option>
+          <mat-option value="R&D">R&D</mat-option>
+          <mat-option value="Marketing">Marketing</mat-option>
+          <mat-option value="Operations">Operations</mat-option>
+          <mat-option value="Admin">Admin</mat-option>
         </mat-select>
       </mat-form-field>
 
@@ -340,6 +352,7 @@ export class ForecastComponent implements OnInit {
   private http = inject(HttpClient);
   private dialog = inject(MatDialog);
   private authService = inject(AuthService);
+  private cdr = inject(ChangeDetectorRef);
 
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -365,6 +378,7 @@ export class ForecastComponent implements OnInit {
     this.filterForm = this.fb.group({
       scenario: [''],
       department: [''],
+      category: [''],
       year: ['']
     });
     this.loadData();
@@ -390,6 +404,9 @@ export class ForecastComponent implements OnInit {
     if (this.filterForm.get('department')?.value) {
       params = params.set('department', this.filterForm.get('department')?.value);
     }
+    if (this.filterForm.get('category')?.value) {
+      params = params.set('category', this.filterForm.get('category')?.value);
+    }
     if (this.filterForm.get('year')?.value) {
       params = params.set('year', this.filterForm.get('year')?.value);
     }
@@ -399,6 +416,15 @@ export class ForecastComponent implements OnInit {
         const items = (data.content || []).map((item: any) => ({ ...item }));
         this.dataSource.data = items;
         this.totalElements = data.totalElements || 0;
+        
+        // Add any new years from data to the years dropdown
+        items.forEach((item: any) => {
+          if (item.year && !this.years.includes(item.year)) {
+            this.years.push(item.year);
+          }
+        });
+        this.years.sort();
+        
         this.loading = false;
       },
       error: (err) => {
@@ -435,7 +461,10 @@ export class ForecastComponent implements OnInit {
     this.editingCell = null;
     this.http.put(`http://localhost:8080/api/forecasts/${row.id}`, row).subscribe({
       next: () => {
-        this.loadData();
+        setTimeout(() => {
+          this.loadData();
+          this.cdr.detectChanges();
+        }, 0);
       },
       error: (err) => console.error('Error saving:', err)
     });
@@ -459,7 +488,18 @@ export class ForecastComponent implements OnInit {
     }
     this.dialog.open(ForecastEditDialog, {
       width: '500px',
-      data: { id: null, department: '', scenario: 'Forecast', year: 2024, monthName: 'Jan', revenue: 0, expense: 0, profit: 0 }
+      data: { 
+        id: null, 
+        department: '', 
+        category: '',
+        scenario: 'FORECAST', 
+        year: 2024, 
+        month: 1,
+        monthName: 'Jan', 
+        revenue: 0, 
+        expense: 0, 
+        profit: 0 
+      }
     }).afterClosed().subscribe(result => {
       if (result) {
         this.saveNew(result);
@@ -477,11 +517,25 @@ export class ForecastComponent implements OnInit {
   }
 
   saveNew(row: any) {
+    // Calculate profit if not set
+    if (!row.profit) {
+      row.profit = (row.revenue || 0) - (row.expense || 0);
+    }
+    console.log('Sending forecast data:', row);
     this.http.post(`http://localhost:8080/api/forecasts`, row).subscribe({
       next: () => {
-        this.loadData();
+        console.log('Forecast added successfully');
+        this.pageIndex = 0;
+        setTimeout(() => {
+          this.loadData();
+        }, 100);
       },
-      error: (err) => console.error('Error creating:', err)
+      error: (err) => {
+        console.error('Full error:', err);
+        console.error('Error response body:', err.error);
+        console.error('Status:', err.status);
+        alert('Error ' + err.status + ': ' + JSON.stringify(err.error?.message || err.error || 'Unknown error'));
+      }
     });
   }
 
@@ -489,7 +543,10 @@ export class ForecastComponent implements OnInit {
     if (confirm('Are you sure you want to delete this record?')) {
       this.http.delete(`http://localhost:8080/api/forecasts/${row.id}`).subscribe({
         next: () => {
-          this.loadData();
+          setTimeout(() => {
+            this.loadData();
+            this.cdr.detectChanges();
+          }, 0);
         },
         error: (err) => console.error('Error deleting:', err)
       });
@@ -539,15 +596,33 @@ export class ForecastComponent implements OnInit {
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Scenario</mat-label>
             <mat-select [(ngModel)]="data.scenario" name="scenario">
-              <mat-option value="Actual">Actual</mat-option>
-              <mat-option value="Forecast">Forecast</mat-option>
-              <mat-option value="Budget">Budget</mat-option>
+              <mat-option value="ACTUAL">Actual</mat-option>
+              <mat-option value="FORECAST">Forecast</mat-option>
+              <mat-option value="BUDGET">Budget</mat-option>
             </mat-select>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Year</mat-label>
             <input matInput type="number" [(ngModel)]="data.year" name="year">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Month</mat-label>
+            <mat-select [(ngModel)]="data.month" name="month">
+              <mat-option value="1">January</mat-option>
+              <mat-option value="2">February</mat-option>
+              <mat-option value="3">March</mat-option>
+              <mat-option value="4">April</mat-option>
+              <mat-option value="5">May</mat-option>
+              <mat-option value="6">June</mat-option>
+              <mat-option value="7">July</mat-option>
+              <mat-option value="8">August</mat-option>
+              <mat-option value="9">September</mat-option>
+              <mat-option value="10">October</mat-option>
+              <mat-option value="11">November</mat-option>
+              <mat-option value="12">December</mat-option>
+            </mat-select>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full-width">

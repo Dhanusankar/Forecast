@@ -5,6 +5,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
+import { AuthService } from './core/services/auth.service';
 
 @Component({
   selector: 'app-layout',
@@ -36,6 +37,9 @@ import { MatMenuModule } from '@angular/material/menu';
 
   <!-- Right Section -->
   <div class="nav-right">
+    <span class="role-badge" *ngIf="currentUser()" [ngClass]="'role-' + (currentUser()?.role || '').toLowerCase()">
+      {{ currentUser()?.role || 'USER' }}
+    </span>
     <button mat-button [matMenuTriggerFor]="userMenu" class="user-button">
       User
     </button>
@@ -97,6 +101,24 @@ import { MatMenuModule } from '@angular/material/menu';
       align-items: center;
     }
 
+    .role-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      background: #667eea;
+      color: white;
+    }
+
+    .role-admin, .role-manager, .role-viewer {
+      background: #667eea;
+      color: white;
+    }
+
     .nav-right button {
       color: white;
       letter-spacing: normal;
@@ -115,10 +137,12 @@ import { MatMenuModule } from '@angular/material/menu';
 })
 export class LayoutComponent {
   private router = inject(Router);
+  private authService = inject(AuthService);
+
+  currentUser = this.authService.currentUser;
 
   logout() {
-    localStorage.removeItem('token');
-    this.router.navigate(['/login']);
+    this.authService.logout();
   }
 }
 
