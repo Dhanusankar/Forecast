@@ -13,10 +13,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialogModule, MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { AuthService } from '../core/services/auth.service';
 
 const DEPARTMENTS = ['Sales', 'Marketing', 'Operations', 'Engineering', 'Finance', 'HR', 'Legal', 'Support', 'Product', 'Strategy'];
-const YEARS = [2024, 2025, 2026, 2027, 2028, 2029];
+const YEARS = [2024, 2025, 2026, 2027, 2028];
 
 @Component({
   selector: 'app-expenses',
@@ -32,9 +31,6 @@ const YEARS = [2024, 2025, 2026, 2027, 2028, 2029];
   <div class="page-header">
     <h2>Expenses Tracking</h2>
     <div class="header-actions">
-      <button *ngIf="isAdmin()" mat-raised-button color="primary" (click)="openAddDialog()" class="add-btn">
-        + Add Expense
-      </button>
       <button mat-stroked-button color="accent" (click)="resetFilters()">
         Reset
       </button>
@@ -116,7 +112,7 @@ const YEARS = [2024, 2025, 2026, 2027, 2028, 2029];
         <!-- Amount -->
         <ng-container matColumnDef="amount">
           <th mat-header-cell *matHeaderCellDef mat-sort-header sticky class="numeric"> Amount </th>
-          <td mat-cell *matCellDef="let row" class="numeric" [ngClass]="{'editable-cell': !isViewer()}" (click)="!isViewer() && editCell(row, 'amount')">
+          <td mat-cell *matCellDef="let row" class="numeric editable-cell" (click)="editCell(row, 'amount')">
             <div *ngIf="!isEditingCell(row, 'amount')" class="cell-display">{{ row.amount | number }}</div>
             <input *ngIf="isEditingCell(row, 'amount')" matInput type="number" [(ngModel)]="row.amount"
               (blur)="saveCell(row, 'amount')" (keyup.enter)="saveCell(row, 'amount')" class="inline-input" autofocus>
@@ -127,13 +123,12 @@ const YEARS = [2024, 2025, 2026, 2027, 2028, 2029];
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef sticky class="actions-header"> Actions </th>
           <td mat-cell *matCellDef="let row" class="actions-cell">
-            <button *ngIf="!isViewer()" mat-raised-button color="primary" class="action-btn" (click)="openEditDialog(row)">
+            <button mat-raised-button color="primary" class="action-btn" (click)="openEditDialog(row)">
               Edit
             </button>
-            <button *ngIf="!isViewer()" mat-raised-button color="warn" class="action-btn" (click)="delete(row)">
+            <button mat-raised-button color="warn" class="action-btn" (click)="delete(row)">
               Delete
             </button>
-            <span *ngIf="isViewer()" class="read-only-badge">Read Only</span>
           </td>
         </ng-container>
 
@@ -189,14 +184,12 @@ const YEARS = [2024, 2025, 2026, 2027, 2028, 2029];
 
     .table-wrapper {
       position: relative;
-      overflow-x: auto;
-      overflow-y: auto;
+      overflow: auto;
       max-height: 600px;
     }
 
     table {
-      width: 100%;
-      border-collapse: collapse;
+      table-layout: fixed;
     }
 
     tr.mat-mdc-row {
@@ -246,8 +239,9 @@ const YEARS = [2024, 2025, 2026, 2027, 2028, 2029];
       gap: 8px;
       align-items: center;
       justify-content: center;
-      padding: 8px 4px;
-      min-width: 180px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+      height: 100%;
     }
 
     .actions-header {
@@ -304,23 +298,12 @@ const YEARS = [2024, 2025, 2026, 2027, 2028, 2029];
     .numeric {
       text-align: center;
     }
-
-    .read-only-badge {
-      display: inline-block;
-      padding: 6px 12px;
-      background: #e0e0e0;
-      color: #666;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 500;
-    }
   `]
 })
 export class ExpensesComponent implements OnInit {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
   private dialog = inject(MatDialog);
-  private authService = inject(AuthService);
 
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -335,28 +318,14 @@ export class ExpensesComponent implements OnInit {
   pageIndex = 0;
   totalElements = 0;
   editingCell: { rowId: number; field: string } | null = null;
-  userRole = '';
 
   ngOnInit() {
-    this.userRole = this.authService.currentUser()?.role || '';
-    // Remove actions column for viewers
-    if (this.isViewer()) {
-      this.displayedColumns = ['department', 'category', 'year', 'month', 'amount'];
-    }
     this.filterForm = this.fb.group({
       department: [''],
       category: [''],
       year: ['']
     });
     this.loadData();
-  }
-
-  isViewer(): boolean {
-    return (this.userRole || '').toLowerCase() === 'viewer';
-  }
-
-  isAdmin(): boolean {
-    return (this.userRole || '').toLowerCase() === 'admin';
   }
 
   loadData() {
@@ -375,7 +344,7 @@ export class ExpensesComponent implements OnInit {
       params = params.set('year', this.filterForm.get('year')?.value);
     }
 
-    this.http.get<any>('https://forecast-2-kxkh.onrender.com/api/spending', { params }).subscribe({
+    this.http.get<any>('https://forecast-1-tpoj.onrender.com/api/spending', { params }).subscribe({
       next: (data) => {
         const items = (data.content || []).map((item: any) => ({ ...item }));
         this.dataSource.data = items;
@@ -409,18 +378,10 @@ export class ExpensesComponent implements OnInit {
   }
 
   editCell(row: any, field: string) {
-    if (this.isViewer()) {
-      return; // Prevent editing for viewers
-    }
     this.editingCell = { rowId: row.id, field };
   }
 
   saveCell(row: any, field: string) {
-    if (this.isViewer()) {
-      alert('Viewers cannot edit data');
-      this.editingCell = null;
-      return;
-    }
     this.editingCell = null;
     this.http.put(`http://localhost:8080/api/spending/${row.id}`, row).subscribe({
       next: () => {
@@ -431,10 +392,6 @@ export class ExpensesComponent implements OnInit {
   }
 
   openEditDialog(row: any) {
-    if (this.isViewer()) {
-      alert('Viewers cannot edit data');
-      return;
-    }
     this.dialog.open(ExpensesEditDialog, {
       width: '500px',
       data: { ...row }
@@ -445,27 +402,8 @@ export class ExpensesComponent implements OnInit {
     });
   }
 
-  openAddDialog() {
-    if (!this.isAdmin()) {
-      alert('Only admins can add data');
-      return;
-    }
-    this.dialog.open(ExpensesEditDialog, {
-      width: '500px',
-      data: { id: null, department: '', category: '', year: new Date().getFullYear(), month: 1, amount: 0 }
-    }).afterClosed().subscribe(result => {
-      if (result) {
-        this.saveNew(result);
-      }
-    });
-  }
-
   save(row: any) {
-    if (this.isViewer()) {
-      alert('Viewers cannot edit data');
-      return;
-    }
-    this.http.put(`http://localhost:8080/api/spending/${row.id}`, row).subscribe({
+    this.http.put(`https://forecast-1-tpoj.onrender.com/api/spending/${row.id}`, row).subscribe({
       next: () => {
         this.loadData();
       },
@@ -473,33 +411,9 @@ export class ExpensesComponent implements OnInit {
     });
   }
 
-  saveNew(row: any) {
-    if (this.isViewer()) {
-      alert('Viewers cannot add data');
-      return;
-    }
-    this.http.post(`https://forecast-2-kxkh.onrender.com/api/spending`, row).subscribe({
-      next: () => {
-        console.log('Expense added successfully');
-        this.pageIndex = 0;
-        setTimeout(() => {
-          this.loadData();
-        }, 100);
-      },
-      error: (err) => {
-        console.error('Error creating expense:', err);
-        alert('Failed to add expense: ' + (err.error?.message || err.statusText || 'Unknown error'));
-      }
-    });
-  }
-
   delete(row: any) {
-    if (this.isViewer()) {
-      alert('Viewers cannot delete data');
-      return;
-    }
     if (confirm('Are you sure you want to delete this record?')) {
-      this.http.delete(`https://forecast-2-kxkh.onrender.com/api/spending/${row.id}`).subscribe({
+      this.http.delete(`https://forecast-1-tpoj.onrender.com/api/spending/${row.id}`).subscribe({
         next: () => {
           this.loadData();
         },

@@ -1,21 +1,16 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 
 export const jwtInterceptor: HttpInterceptorFn = (request, next) => {
-  // Don't add token to login/register endpoints
-  if (request.url.includes('/auth/login') || request.url.includes('/auth/register')) {
-    return next(request);
-  }
-
   const token = localStorage.getItem('auth_token');
 
-  if (token) {
+  if (token && request.url.includes('forecast-1-tpoj.onrender.com')) {
     console.log('Adding JWT token to request:', request.url);
     request = request.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`
       }
     });
-  } else {
+  } else if (!token) {
     console.warn('No token found in localStorage');
   }
 

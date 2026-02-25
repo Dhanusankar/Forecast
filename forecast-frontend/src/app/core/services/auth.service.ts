@@ -25,7 +25,7 @@ export interface LoginResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'https://forecast-2-kxkh.onrender.com/api/auth';
+  private apiUrl = 'https://forecast-1-tpoj.onrender.com/api/auth';
   private tokenKey = 'auth_token';
   private userKey = 'auth_user';
 
