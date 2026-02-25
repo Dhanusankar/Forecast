@@ -118,7 +118,7 @@ export class HomeComponent implements OnInit {
     this.currentUser.set(this.authService.currentUser());
     this.userRole.set(this.authService.currentUser()?.role || '');
     
-    this.http.get<any>('http://localhost:8080/api/dashboard/overview?year=2024')
+    this.http.get<any>('https://forecast-2-kxkh.onrender.com/api/dashboard/overview?year=2024')
       .subscribe({
         next: (data) => {
           console.log('Dashboard data received:', data);

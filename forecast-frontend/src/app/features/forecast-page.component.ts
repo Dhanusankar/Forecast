@@ -411,7 +411,7 @@ export class ForecastComponent implements OnInit {
       params = params.set('year', this.filterForm.get('year')?.value);
     }
 
-    this.http.get<any>('http://localhost:8080/api/forecasts', { params }).subscribe({
+    this.http.get<any>('https://forecast-2-kxkh.onrender.com/api/forecasts', { params }).subscribe({
       next: (data) => {
         const items = (data.content || []).map((item: any) => ({ ...item }));
         this.dataSource.data = items;
@@ -459,7 +459,7 @@ export class ForecastComponent implements OnInit {
 
   saveCell(row: any, field: string) {
     this.editingCell = null;
-    this.http.put(`http://localhost:8080/api/forecasts/${row.id}`, row).subscribe({
+    this.http.put(`https://forecast-2-kxkh.onrender.com/api/forecasts/${row.id}`, row).subscribe({
       next: () => {
         setTimeout(() => {
           this.loadData();
@@ -522,7 +522,7 @@ export class ForecastComponent implements OnInit {
       row.profit = (row.revenue || 0) - (row.expense || 0);
     }
     console.log('Sending forecast data:', row);
-    this.http.post(`http://localhost:8080/api/forecasts`, row).subscribe({
+    this.http.post(`https://forecast-2-kxkh.onrender.com/api/forecasts`, row).subscribe({
       next: () => {
         console.log('Forecast added successfully');
         this.pageIndex = 0;
@@ -541,7 +541,7 @@ export class ForecastComponent implements OnInit {
 
   delete(row: any) {
     if (confirm('Are you sure you want to delete this record?')) {
-      this.http.delete(`http://localhost:8080/api/forecasts/${row.id}`).subscribe({
+      this.http.delete(`https://forecast-2-kxkh.onrender.com/api/forecasts/${row.id}`).subscribe({
         next: () => {
           setTimeout(() => {
             this.loadData();

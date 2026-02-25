@@ -375,7 +375,7 @@ export class ExpensesComponent implements OnInit {
       params = params.set('year', this.filterForm.get('year')?.value);
     }
 
-    this.http.get<any>('http://localhost:8080/api/spending', { params }).subscribe({
+    this.http.get<any>('https://forecast-2-kxkh.onrender.com/api/spending', { params }).subscribe({
       next: (data) => {
         const items = (data.content || []).map((item: any) => ({ ...item }));
         this.dataSource.data = items;
@@ -478,7 +478,7 @@ export class ExpensesComponent implements OnInit {
       alert('Viewers cannot add data');
       return;
     }
-    this.http.post(`http://localhost:8080/api/spending`, row).subscribe({
+    this.http.post(`https://forecast-2-kxkh.onrender.com/api/spending`, row).subscribe({
       next: () => {
         console.log('Expense added successfully');
         this.pageIndex = 0;
@@ -499,7 +499,7 @@ export class ExpensesComponent implements OnInit {
       return;
     }
     if (confirm('Are you sure you want to delete this record?')) {
-      this.http.delete(`http://localhost:8080/api/spending/${row.id}`).subscribe({
+      this.http.delete(`https://forecast-2-kxkh.onrender.com/api/spending/${row.id}`).subscribe({
         next: () => {
           this.loadData();
         },
