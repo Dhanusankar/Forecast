@@ -171,7 +171,7 @@ export class RegisterComponent {
     this.loading.set(true);
     this.errorMessage.set('');
 
-    this.http.post<any>('http://localhost:8080/api/auth/register', {
+    this.http.post<any>('https://forecast-1-tpoj.onrender.com/api/auth/register', {
       username: this.username,
       email: this.email,
       password: this.password

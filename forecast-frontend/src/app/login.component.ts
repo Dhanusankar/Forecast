@@ -160,7 +160,7 @@ export class LoginComponent {
     this.loading.set(true);
     this.errorMessage.set('');
 
-    this.http.post<any>('http://localhost:8080/api/auth/login', {
+    this.http.post<any>('https://forecast-1-tpoj.onrender.com/api/auth/login', {
       username: this.username,
       password: this.password
     }).subscribe({

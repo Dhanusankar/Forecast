@@ -100,7 +100,7 @@ export class HomeComponent implements OnInit {
   error = signal('');
 
   ngOnInit() {
-    this.http.get<any>('http://localhost:8080/api/dashboard/overview?year=2024')
+    this.http.get<any>('https://forecast-1-tpoj.onrender.com/api/dashboard/overview?year=2024')
       .subscribe({
         next: (data) => {
           console.log('Dashboard data received:', data);

@@ -344,7 +344,7 @@ export class ExpensesComponent implements OnInit {
       params = params.set('year', this.filterForm.get('year')?.value);
     }
 
-    this.http.get<any>('http://localhost:8080/api/spending', { params }).subscribe({
+    this.http.get<any>('https://forecast-1-tpoj.onrender.com/api/spending', { params }).subscribe({
       next: (data) => {
         const items = (data.content || []).map((item: any) => ({ ...item }));
         this.dataSource.data = items;
@@ -403,7 +403,7 @@ export class ExpensesComponent implements OnInit {
   }
 
   save(row: any) {
-    this.http.put(`http://localhost:8080/api/spending/${row.id}`, row).subscribe({
+    this.http.put(`https://forecast-1-tpoj.onrender.com/api/spending/${row.id}`, row).subscribe({
       next: () => {
         this.loadData();
       },
@@ -413,7 +413,7 @@ export class ExpensesComponent implements OnInit {
 
   delete(row: any) {
     if (confirm('Are you sure you want to delete this record?')) {
-      this.http.delete(`http://localhost:8080/api/spending/${row.id}`).subscribe({
+      this.http.delete(`https://forecast-1-tpoj.onrender.com/api/spending/${row.id}`).subscribe({
         next: () => {
           this.loadData();
         },
