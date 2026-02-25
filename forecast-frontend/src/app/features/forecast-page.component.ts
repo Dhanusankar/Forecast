@@ -32,6 +32,9 @@ const YEARS = [2024, 2025, 2026, 2027, 2028];
   <div class="page-header">
     <h2>Financial Forecast Planning</h2>
     <div class="header-actions">
+      <button *ngIf="isAdmin()" mat-raised-button color="primary" (click)="openAddDialog()" class="add-btn">
+        + Add Forecast
+      </button>
       <button mat-stroked-button color="accent" (click)="resetFilters()">
         Reset
       </button>
@@ -371,6 +374,10 @@ export class ForecastComponent implements OnInit {
     return (this.userRole || '').toLowerCase() === 'viewer';
   }
 
+  isAdmin(): boolean {
+    return (this.userRole || '').toLowerCase() === 'admin';
+  }
+
   loadData() {
     this.loading = true;
     let params = new HttpParams()
@@ -445,12 +452,36 @@ export class ForecastComponent implements OnInit {
     });
   }
 
+  openAddDialog() {
+    if (!this.isAdmin()) {
+      alert('Only admins can add data');
+      return;
+    }
+    this.dialog.open(ForecastEditDialog, {
+      width: '500px',
+      data: { id: null, department: '', scenario: 'Forecast', year: 2024, monthName: 'Jan', revenue: 0, expense: 0, profit: 0 }
+    }).afterClosed().subscribe(result => {
+      if (result) {
+        this.saveNew(result);
+      }
+    });
+  }
+
   save(row: any) {
-    this.http.put(`https://forecast-1-tpoj.onrender.com/api/forecasts/${row.id}`, row).subscribe({
+    this.http.put(`http://localhost:8080/api/forecasts/${row.id}`, row).subscribe({
       next: () => {
         this.loadData();
       },
       error: (err) => console.error('Error saving:', err)
+    });
+  }
+
+  saveNew(row: any) {
+    this.http.post(`http://localhost:8080/api/forecasts`, row).subscribe({
+      next: () => {
+        this.loadData();
+      },
+      error: (err) => console.error('Error creating:', err)
     });
   }
 

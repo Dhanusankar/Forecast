@@ -32,6 +32,9 @@ const YEARS = [2024, 2025, 2026, 2027, 2028];
   <div class="page-header">
     <h2>Expenses Tracking</h2>
     <div class="header-actions">
+      <button *ngIf="isAdmin()" mat-raised-button color="primary" (click)="openAddDialog()" class="add-btn">
+        + Add Expense
+      </button>
       <button mat-stroked-button color="accent" (click)="resetFilters()">
         Reset
       </button>
@@ -352,6 +355,10 @@ export class ExpensesComponent implements OnInit {
     return (this.userRole || '').toLowerCase() === 'viewer';
   }
 
+  isAdmin(): boolean {
+    return (this.userRole || '').toLowerCase() === 'admin';
+  }
+
   loadData() {
     this.loading = true;
     let params = new HttpParams()
@@ -415,17 +422,12 @@ export class ExpensesComponent implements OnInit {
       return;
     }
     this.editingCell = null;
-    if (this.useLocalData) {
-      this.mockDataService.updateExpense(row.id, row);
-      this.loadData();
-    } else {
-      this.http.put(`http://localhost:8080/api/spending/${row.id}`, row).subscribe({
-        next: () => {
-          this.loadData();
-        },
-        error: (err) => console.error('Error saving:', err)
-      });
-    }
+    this.http.put(`http://localhost:8080/api/spending/${row.id}`, row).subscribe({
+      next: () => {
+        this.loadData();
+      },
+      error: (err) => console.error('Error saving:', err)
+    });
   }
 
   openEditDialog(row: any) {
@@ -443,37 +445,59 @@ export class ExpensesComponent implements OnInit {
     });
   }
 
+  openAddDialog() {
+    if (!this.isAdmin()) {
+      alert('Only admins can add data');
+      return;
+    }
+    this.dialog.open(ExpensesEditDialog, {
+      width: '500px',
+      data: { id: null, department: '', category: '', year: new Date().getFullYear(), month: 1, amount: 0 }
+    }).afterClosed().subscribe(result => {
+      if (result) {
+        this.saveNew(result);
+      }
+    });
+  }
+
   save(row: any) {
     if (this.isViewer()) {
       alert('Viewers cannot edit data');
       return;
     }
-    if (this.useLocalData) {
-      this.mockDataService.updateExpense(row.id, row);
-      this.loadData();
-    } else {
-      this.http.put(`http://localhost:8080/api/spending/${row.id}`, row).subscribe({
-        next: () => {
-          this.loadData();
-        },
-        error: (err) => console.error('Error saving:', err)
-      });
+    this.http.put(`http://localhost:8080/api/spending/${row.id}`, row).subscribe({
+      next: () => {
+        this.loadData();
+      },
+      error: (err) => console.error('Error saving:', err)
+    });
+  }
+
+  saveNew(row: any) {
+    if (this.isViewer()) {
+      alert('Viewers cannot add data');
+      return;
     }
+    this.http.post(`http://localhost:8080/api/spending`, row).subscribe({
+      next: () => {
+        this.loadData();
+      },
+      error: (err) => console.error('Error creating:', err)
+    });
   }
 
   delete(row: any) {
+    if (this.isViewer()) {
+      alert('Viewers cannot delete data');
+      return;
+    }
     if (confirm('Are you sure you want to delete this record?')) {
-      if (this.useLocalData) {
-        this.mockDataService.deleteExpense(row.id);
-        this.loadData();
-      } else {
-        this.http.delete(`http://localhost:8080/api/spending/${row.id}`).subscribe({
-          next: () => {
-            this.loadData();
-          },
-          error: (err) => console.error('Error deleting:', err)
-        });
-      }
+      this.http.delete(`http://localhost:8080/api/spending/${row.id}`).subscribe({
+        next: () => {
+          this.loadData();
+        },
+        error: (err) => console.error('Error deleting:', err)
+      });
     }
   }
 
